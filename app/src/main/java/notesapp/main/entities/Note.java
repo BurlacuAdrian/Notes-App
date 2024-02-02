@@ -1,17 +1,39 @@
 package notesapp.main.entities;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
+@Entity(tableName = "notes")
 public class Note implements Serializable {
 
+    @NonNull
+    @PrimaryKey(autoGenerate = false)
+    private String uuId;
     private Date date, lastEdited;
     private String title, content, color, hash;
 
+    public Note(String uuId, Date date, Date lastEdited, String title, String content, String color, String hash) {
+        this.uuId = uuId;
+        this.date = date;
+        this.lastEdited = lastEdited;
+        this.title = title;
+        this.content = content;
+        this.hash=hash;
+        this.color=color;
+    }
+
+    @Ignore
     public Note(Date date, String title, String content, String color) {
+        this.uuId = UUID.randomUUID().toString();
         this.date = date;
         this.lastEdited = date;
         this.title = title;
@@ -20,20 +42,13 @@ public class Note implements Serializable {
         this.color=color;
     }
 
-    public Note(Date date, String title, String content) {
-        this.date = date;
-        this.lastEdited = date;
-        this.title = title;
-        this.content = content;
-        updateHash(content);
-    }
-
-    public Note(Date date, String title) {
-        this.date = date;
-        this.title = title;
-    }
-
+    @Ignore
     public Note() {
+        this.uuId = UUID.randomUUID().toString();
+    }
+
+    public String getUuId() {
+        return uuId;
     }
 
     public Date getDate() {

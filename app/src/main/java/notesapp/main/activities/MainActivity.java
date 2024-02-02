@@ -16,34 +16,36 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import notesapp.main.entities.Note;
 import notesapp.main.R;
 import notesapp.main.adapters.NotesAdapter;
+import notesapp.main.roomdb.NotesDAO;
+import notesapp.main.roomdb.NotesDB;
 
 public class MainActivity extends AppCompatActivity {
 
     List<Note> notesList;
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     int pos;
 
     private RecyclerView notesRecyclerView;
     private NotesAdapter notesAdapter;
+
+    NotesDB db = null;
+    NotesDAO dao = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        notesList = new ArrayList<>();
+        db = NotesDB.getInstance(getApplicationContext());
+        dao = db.getNotesDAO();
 
-        // Sample data
-        notesList.add(new Note(new Date(System.currentTimeMillis() - 3 * 60 * 1000),"Today's to do list","Go grocery shopping\nDo laundry","yellow"));
-        notesList.add(new Note(new Date(System.currentTimeMillis() - 5 * 24 * 60 * 60 * 1000),"Plans for Saturday","Picnic","red"));
+        notesList = new ArrayList<>();
+        notesList.addAll(dao.getAll());
 
 
         notesRecyclerView=findViewById(R.id.notesRecyclerView);
@@ -56,10 +58,8 @@ public class MainActivity extends AppCompatActivity {
         notesAdapter = new NotesAdapter(notesList, new NotesAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
-                // Handle item click here
                 pos = position;
                 Note clickedNote = notesList.get(position);
-                // Implement your desired behavior
                 Intent intent = new Intent(getApplicationContext(), ViewNote.class);
                 intent.putExtra("NOTE", clickedNote);
                 startActivityForResult(intent, REQUEST_CODE_EDIT);
@@ -70,20 +70,14 @@ public class MainActivity extends AppCompatActivity {
                 AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                         .setTitle("Confirm delete")
                         .setMessage("Are you sure you want to delete this note?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                notesList.remove(position);
-                                notesAdapter.notifyDataSetChanged();
-                            }
+                        .setPositiveButton("Yes", (dialog1, which) -> {
+                            Note noteToBeDeleted = notesList.get(position);
+                            dao.delete(noteToBeDeleted);
+                            notesList.remove(position);
+                            notesAdapter.notifyItemRemoved(position);
                         })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(),"Did not delete",Toast.LENGTH_LONG).show();
-
-                            }
-                        })
+                        .setNegativeButton("No", (dialog12, which) ->
+                                Toast.makeText(getApplicationContext(),"Did not delete",Toast.LENGTH_LONG).show())
                         .create();
                 dialog.show();
 
@@ -110,19 +104,21 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode==REQUEST_CODE_ADD && resultCode == RESULT_OK && data !=null){
-            notesList.add((Note)data.getSerializableExtra(ADD_NOTE));
-            notesAdapter.notifyDataSetChanged();
-            //listView.setAdapter(new CustomAdapter(getApplicationContext(),R.layout.custom_item,notes,getLayoutInflater()));
-
+            Note noteToBeAdded = (Note)data.getSerializableExtra(ADD_NOTE);
+            int position = notesList.size();
+            notesList.add(noteToBeAdded);
+            dao.insert(noteToBeAdded);
+            notesAdapter.notifyItemInserted(position);
         }
 
         if(requestCode==REQUEST_CODE_EDIT && resultCode == RESULT_OK && data !=null){
             Note old = notesList.get(pos);
             Note newNote = (Note)data.getSerializableExtra(ADD_NOTE);
             old.setTitle(newNote.getTitle());
-            old.setContent(newNote.getContent());
+            old.setContentAndHash(newNote.getContent());
             old.setColor(newNote.getColor());
-            notesAdapter.notifyDataSetChanged();
+            dao.update(old);
+            notesAdapter.notifyItemRemoved(pos);
 
         }
     }

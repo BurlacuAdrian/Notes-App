@@ -37,16 +37,14 @@ import notesapp.main.R;
 
 public class ViewNote extends AppCompatActivity {
 
-    private String currentSelectedColor = "None";
-    View selectedColorView = null;
-    ImageView selectedColorCheck = null;
     List<ImageView> checkedOptions;
 
     EditText editTextTitle, editTextContent;
-    TextView textViewDate,lastEditedTextView;
+    TextView lastEditedTextView;
     Note note=null;
     Intent intent = null;
     boolean changesOccured = false;
+    String currentColor = "blue";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +60,6 @@ public class ViewNote extends AppCompatActivity {
             note =(Note) intent.getSerializableExtra("NOTE");
             editTextTitle.setText(note.getTitle());
             editTextContent.setText(note.getContent());
-//            textViewDate.setText(note.getDate().toString());
             lastEditedTextView = findViewById(R.id.lastEditedTextView);
             lastEditedTextView.setVisibility(View.VISIBLE);
             lastEditedTextView.setText("Last edited : "+getTimeAgo(note.getLastEdited()));
@@ -141,8 +138,12 @@ public class ViewNote extends AppCompatActivity {
                 colorCheck.setVisibility(View.VISIBLE);
 
                 changeColorIndicator(colorId);
-                note.setColor(colorName);
-                changesOccured=true;
+                if(note!=null){
+                    note.setColor(colorName);
+                    changesOccured=true;
+                }else
+                    currentColor = colorName;
+
 
             }
         });
@@ -157,10 +158,9 @@ public class ViewNote extends AppCompatActivity {
         if(note==null){
             returnedNote=new Note();
             returnedNote.setDate(new Date());
-            returnedNote.setLastEdited(note.getDate());
-            returnedNote.setColor("blue");
-        }
-        else
+            returnedNote.setLastEdited(returnedNote.getDate());
+            returnedNote.setColor(currentColor);
+        }else
             returnedNote=note;
 
         returnedNote.setTitle(editTextTitle.getText().toString());
