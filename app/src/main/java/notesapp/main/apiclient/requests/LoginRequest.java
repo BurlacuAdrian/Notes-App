@@ -1,4 +1,4 @@
-package notesapp.main.apiclient;
+package notesapp.main.apiclient.requests;
 
 public class LoginRequest {
     private String username;

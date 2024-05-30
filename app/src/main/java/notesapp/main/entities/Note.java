@@ -38,8 +38,19 @@ public class Note implements Serializable {
         this.lastEdited = date;
         this.title = title;
         this.content = content;
-        updateHash(content);
         this.color=color;
+        updateHash();
+    }
+
+    @Ignore
+    public Note(Note note){
+        this.uuId = UUID.randomUUID().toString();
+        this.date = note.date;
+        this.lastEdited = note.date;
+        this.title = note.title;
+        this.content = note.content;
+        this.color=note.color;
+        updateHash();
     }
 
     @Ignore
@@ -89,10 +100,13 @@ public class Note implements Serializable {
         return title+" on "+sdf.format(date);
     }
 
-    public String calculateHash(String content) {
+    public String calculateHash() {
         try {
+            // Concatenate content, title, and color
+            String combinedData = content + title + color;
+
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(content.getBytes());
+            byte[] hashBytes = digest.digest(combinedData.getBytes());
             StringBuilder hashBuilder = new StringBuilder();
 
             for (byte b : hashBytes) {
@@ -106,17 +120,12 @@ public class Note implements Serializable {
         }
     }
 
-    public void setContentAndHash(String newContent) {
-        this.content=newContent;
-        this.hash = calculateHash(newContent);
+    public void updateHash(){
+        this.hash=calculateHash();
     }
 
-    public void updateHash(String newContent){
-        this.hash=calculateHash(newContent);
-    }
-
-    public boolean hasContentChanged(String newContent){
-        return !this.hash.equals(calculateHash(newContent));
+    public boolean hasContentChanged(Note comparedNote){
+        return !this.hash.equals(comparedNote.calculateHash());
     }
 
     public String getColor() {

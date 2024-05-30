@@ -67,12 +67,15 @@ public class ViewNote extends AppCompatActivity {
             switch (colorName){
                 case "red":
                     changeColorIndicator(R.drawable.color_indicator_red);
+                    currentColor="red";
                     break;
                 case "blue":
                     changeColorIndicator(R.drawable.color_indicator);
+                    currentColor = "blue";
                     break;
                 case "yellow":
                     changeColorIndicator(R.drawable.color_indicator_yellow);
+                    currentColor = "yellow";
                     break;
             }
 
@@ -164,8 +167,9 @@ public class ViewNote extends AppCompatActivity {
             returnedNote=note;
 
         returnedNote.setTitle(editTextTitle.getText().toString());
-        returnedNote.setContentAndHash(editTextContent.getText().toString());
+        returnedNote.setContent(editTextContent.getText().toString());
         returnedNote.setLastEdited(new Date());
+        returnedNote.updateHash();
 
         intent.putExtra(ADD_NOTE,returnedNote);
 
@@ -175,7 +179,11 @@ public class ViewNote extends AppCompatActivity {
 
     private void handleBackButtonAction() {
         if(note != null){
-            if(changesOccured || note.hasContentChanged(editTextContent.getText().toString())){
+
+            Note tempNote = new Note(new Date(),editTextTitle.getText().toString(),
+                                    editTextContent.getText().toString(),
+                                    currentColor);
+            if(changesOccured || note.hasContentChanged(tempNote)){
                 AlertDialog dialog = new AlertDialog.Builder(ViewNote.this)
                         .setTitle("Confirm action")
                         .setMessage("You have unsaved changes. Choose what to do with the current note:")

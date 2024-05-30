@@ -1,10 +1,17 @@
 package notesapp.main.utils;
 
+import android.widget.Toast;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
-public class UtilityFunctions {
+import notesapp.main.NotesApp;
+import notesapp.main.entities.Note;
+
+public abstract class UtilityFunctions {
 
     public static String getTimeAgo(Date date) {
         if (date == null) {
@@ -61,6 +68,41 @@ public class UtilityFunctions {
 
         // Append the suffix to the day of the month in the format
         return dateFormat.format(date).replaceFirst("d", day + suffix);
+    }
+
+    public static String createJsonString(List<Note> notesToBeConverted) {
+        StringBuilder jsonBuilder = new StringBuilder("{ \"notes\" : [ ");
+        int index = 0;
+
+        for (Note note : notesToBeConverted) {
+            if (index != 0) {
+                jsonBuilder.append(",");
+            }
+            index++;
+
+            jsonBuilder.append("{ \"uuid\": \"").append(note.getUuId()).append("\",");
+            jsonBuilder.append("\"date\": \"").append(note.getLastEdited()).append("\",");
+            jsonBuilder.append("\"title\": \"").append(note.getTitle()).append("\",");
+            jsonBuilder.append("\"content\": \"").append(note.getContent()).append("\",");
+            jsonBuilder.append("\"color\": \"").append(note.getColor()).append("\",");
+            jsonBuilder.append("\"hash\": \"").append(note.getHash()).append("\"}");
+        }
+
+        jsonBuilder.append("]}");
+
+        return jsonBuilder.toString();
+    }
+
+    public static List<Note> singleItemList(Note note){
+        List<Note> singleItemList = new ArrayList<>();
+        singleItemList.add(note);
+        return singleItemList;
+    }
+
+    public static void showToast(String message) {
+        if (NotesApp.getInstance() != null) {
+            Toast.makeText(NotesApp.getInstance().getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 
 }

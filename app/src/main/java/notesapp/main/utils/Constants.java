@@ -8,6 +8,8 @@ public class Constants {
     //  Request codes
     public static final int REQUEST_CODE_ADD=1;
     public static final int REQUEST_CODE_EDIT=2;
+    public static final int REQUEST_CODE_LOGIN=3;
+    public static final int REQUEST_CODE_SIGNUP=4;
 
     //
     public static final String ADD_NOTE="ADD_NOTE";
